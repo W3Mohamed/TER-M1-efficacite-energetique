@@ -8,3 +8,8 @@ L’émergence de l’urgence climatique impose aujourd’hui une transformation
 En adoptant le langage Rust, ce projet s'inscrit dans une démarche de maîtrise fine du matériel, où chaque cycle CPU économisé et chaque accès à la mémoire vive (RAM) optimisé contribuent directement à l'amélioration du bilan énergétique global.
 
 L'objectif scientifique de ce projet est d'analyser les mécanismes qui régissent la consommation énergétique logicielle en s'appuyant sur des cas d'étude concrets, tels que le calcul d'un produit matriciel. Cette approche permet de démontrer qu'à résultat identique, des choix d'implémentation et de gestion des ressources différents modifient radicalement la quantité de Joules consommés. Il s'agit d'établir une méthodologie permettant d'identifier le compromis optimal entre le temps d'exécution et la puissance électrique appelée, plaçant ainsi le développeur comme un acteur central de la sobriété numérique.
+
+## 2. Méthodologie d'évaluation de la consommation énergétique
+Dans ce chapitre, nous allons étudier comment mesurer et évaluer la consommation énergétique d’un programme lors de son exécution. Cette étape est indispensable car on ne peut pas savoir si un programme est bien optimisé sans le mesurer concrètement et voir combien il a réellement consommé.
+
+Nous allons structurer cette étude en trois points : tout d'abord, nous comparerons la pertinence d'une mesure logicielle via PowerAPI par rapport à une mesure physique. Ensuite, nous définirons un protocole d'isolation strict pour garantir que seule la consommation de notre application est comptabilisée. Enfin, nous détaillerons les métriques de calcul (Joules, Watts, Temps) qui nous permettront de quantifier l'efficacité énergétique de nos développements.

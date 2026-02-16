@@ -20,7 +20,7 @@ Dans cette section, nous comparons deux approches pour quantifier la dépense é
 * **La Mesure Logicielle (PowerAPI) :** À l'inverse, cette approche permet d'isoler la consommation des composants internes sollicités par le calcul, comme le processeur (CPU) et la mémoire vive (RAM). Nous avons choisi d'utiliser PowerAPI, un outil de référence qui agit comme un wattmètre logiciel pour estimer la consommation avec une granularité fine en ciblant spécifiquement le processus de notre application. Cette méthode offre l'avantage de suivre l'évolution de la consommation en temps réel et d'obtenir des données exploitables pour comparer différentes versions d'un algorithme sans les interférences liées au matériel périphérique.
 
 ## 3. Étude Algorithmique de la Multiplication de Matrices
-# 3.1 Définition mathématique
+### 3.1 Définition mathématique
 Soient deux matrices :
 A de taille n × p
 B de taille p × m

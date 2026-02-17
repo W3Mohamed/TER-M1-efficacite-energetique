@@ -17,8 +17,6 @@ Nous allons structurer cette étude en trois points : tout d'abord, nous compare
 ### 2.1 La Mesure : Physique vs Logicielle
 Dans cette section, nous comparons deux approches pour quantifier la dépense énergétique d'un système informatique afin de justifier notre choix méthodologique.
 * **La Mesure Physique (Wattmètre) :** Cette méthode consiste à placer un appareil de mesure entre la prise de courant et l'alimentation de l'ordinateur. Bien qu'elle donne la consommation réelle totale, elle manque de précision pour l'analyse logicielle car elle comptabilise l'ensemble des composants (écran, ventilateurs, périphériques USB, etc.), créant un "bruit" qui masque la consommation spécifique du programme étudié,rendant difficile l'isolation de l'impact réel du code.
-<<<<<<< HEAD
-<<<<<<< HEAD
 * **La Mesure Logicielle (PowerAPI) :** À l'inverse, cette approche permet d'isoler la consommation des composants internes sollicités par le calcul, comme le processeur (CPU) et la mémoire vive (RAM). Nous avons choisi d'utiliser **PowerAPI**, un outil de référence qui agit comme un wattmètre logiciel pour estimer la consommation avec une granularité fine en ciblant spécifiquement le processus de notre application. Cette méthode offre l'avantage de suivre l'évolution de la consommation en temps réel et d'obtenir des données exploitables pour comparer différentes versions d'un algorithme sans les interférences liées au matériel périphérique.
 
 ### 2.2 Le Protocole d'Estimation (L'Isolation)
@@ -67,6 +65,3 @@ de l’implémentation
 de la gestion mémoire
 de l’interaction avec l’architecture matérielle
 Dans la suite du projet, différentes implémentations de la multiplication de matrices en Rust seront analysées et mesurées afin de comparer leur efficacité énergétique.
-=======
-* **La Mesure Logicielle (PowerAPI) :** À l'inverse, cette approche permet d'isoler la consommation des composants internes sollicités par le calcul, comme le processeur (CPU) et la mémoire vive (RAM). Nous avons choisi d'utiliser PowerAPI, un outil de référence qui agit comme un wattmètre logiciel pour estimer la consommation avec une granularité fine en ciblant spécifiquement le processus de notre application. Cette méthode offre l'avantage de suivre l'évolution de la consommation en temps réel et d'obtenir des données exploitables pour comparer différentes versions d'un algorithme sans les interférences liées au matériel périphérique.
->>>>>>> bcbde84c4caf56b80976253d3ab79100261593e1

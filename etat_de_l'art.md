@@ -26,6 +26,12 @@ Pour obtenir des mesures fiables avec PowerAPI, il est impératif de mettre en p
 * **Stabilité thermique :** Le processeur consomme davantage d'énergie lorsqu'il chauffe (phénomène de fuite de courant). Nous veillons donc à ce que la machine soit à une température stable entre chaque test pour éviter que la chaleur accumulée ne biaise les comparaisons.
 * **Répétabilité et moyenne statistique :** Une mesure unique n'est jamais représentative à cause des micro-activités du système. Chaque test est répété plusieurs fois (par exemple 20 itérations). Nous calculons ensuite une moyenne des résultats et l'écart-type pour assurer la validité statistique de nos données et éliminer les valeurs aberrantes.
 
+### 2.3 Les Métriques de Calcul
+Une fois le protocole de mesure appliqué, nous collectons des données quantitatives que nous analysons selon trois indicateurs complémentaires :
+* **L'Énergie (Joules) :** C'est notre métrique de référence. Elle représente la quantité totale de travail électrique consommé par le processeur et la mémoire durant l'exécution complète de l'algorithme. C'est l'indicateur principal de l'empreinte environnementale du code.
+* **La Puissance (Watts) :** Elle exprime le débit d'énergie à un instant $T$. Son analyse nous permet d'identifier les phases de calcul les plus intenses et d'observer les "pics" de consommation liés à certaines instructions ou accès mémoire.
+* **Le Temps d'exécution (Secondes) :** Bien que l'objectif soit de réduire l'énergie, le temps reste une variable indissociable. Nous l'utilisons pour calculer l'efficacité énergétique globale, car un programme qui consomme peu de puissance mais met trop de temps à s'exécuter peut finalement présenter un bilan énergétique (en Joules) plus lourd qu'un programme rapide et intense.
+
 ## 3. Étude Algorithmique de la Multiplication de Matrices
 ### 3.1 Définition mathématique
 Soient deux matrices :

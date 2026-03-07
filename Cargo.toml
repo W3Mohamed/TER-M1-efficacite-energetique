@@ -1,0 +1,8 @@
+[package]
+name = "ter-m1-efficacite-energetique"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rayon = "1.8"
+rand = "0.8"

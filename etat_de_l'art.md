@@ -71,3 +71,14 @@ de l’implémentation
 de la gestion mémoire
 de l’interaction avec l’architecture matérielle
 Dans la suite du projet, différentes implémentations de la multiplication de matrices en Rust seront analysées et mesurées afin de comparer leur efficacité énergétique.
+
+## 6. Résultats Expérimentaux et Analyse
+Afin de valider les concepts théoriques, nous avons implémenté quatre variantes du produit matriciel $n \times n$ en Rust. Les tests ont été effectués sous WSL2 (Ubuntu 24.04).
+
+### 3.1 Tableau Comparatif (Taille $n = 1024$)
+| Variante Algorithmique | Temps d'exécution (s) | Gain / Naïve |
+| :--------------- |:---------------:| :-----:|
+| 1. Naïve (i, j, k)  |   7.34 s        |  Référence |
+| 2. Vector (i, k, j)  |   0.59 s        |   92% |
+| 3. Blocked (Tiling)  |   0.38 s        |   94% |
+| 4. Parallel (Rayon)  |   0.29 s        |    96% |

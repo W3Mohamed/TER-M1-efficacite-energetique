@@ -103,7 +103,7 @@ impl Index<(usize, usize)> for Matrix {
 
 impl IndexMut<(usize, usize)> for Matrix {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
-        &self.values[index.0 * self.n + index.1]
+        &mut self.values[index.0 * self.n + index.1]
     }
 }
 

@@ -82,3 +82,115 @@ Afin de valider les concepts théoriques, nous avons implémenté quatre variant
 | 2. Vector (i, k, j)  |   0.59 s        |   92% |
 | 3. Blocked (Tiling)  |   0.38 s        |   94% |
 | 4. Parallel (Rayon)  |   0.29 s        |    96% |
+
+## 7. Mesure de la Consommation Énergétique (Windows Native)
+
+Les mesures de temps sous WSL2 ne permettant pas d'accéder aux capteurs matériels du CPU,
+nous avons effectué les mesures énergétiques directement sous Windows en utilisant
+l'API matérielle RAPL (Running Average Power Limit) d'Intel.
+
+### 7.1 Infrastructure de Mesure
+
+**Technologie RAPL (Running Average Power Limit)**
+
+Le processeur Intel Core i5-1145G7 embarque des compteurs matériels intégrés appelés
+RAPL qui mesurent la consommation électrique réelle du CPU en temps réel, directement
+depuis les registres internes du processeur (MSR registers). Ces compteurs sont
+inaccessibles depuis WSL2 car celui-ci ne dispose pas d'un accès direct au matériel.
+
+**Outil : LibreHardwareMonitor**
+
+Pour accéder aux données RAPL sous Windows, nous avons utilisé
+[LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor),
+un logiciel open-source qui :
+1. Accède aux registres matériels du CPU en mode administrateur
+2. Lit les valeurs RAPL en temps réel
+3. Les expose via un serveur web local sur `http://localhost:8085/data.json`
+
+**Mise en place :**
+```bash
+# Étape 1 : Téléchargement de LibreHardwareMonitor
+# https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases
+# Extraire le zip et lancer LibreHardwareMonitor.exe en tant qu'administrateur
+
+# Étape 2 : Activation du serveur Web
+# Options → cocher "Web Server" → port 8085
+
+# Étape 3 : Vérification de l'accès au flux de données
+# http://localhost:8085/data.json
+
+# Étape 4 : Identification du capteur CPU Package Power via PowerShell
+$json = (Invoke-WebRequest -Uri "http://localhost:8085/data.json").Content | ConvertFrom-Json
+
+function Find-Power($node) {
+    if ($node.Text -match "Power" -or $node.Text -match "Package") {
+        Write-Host "ID: $($node.id) | Nom: $($node.Text) | Valeur: $($node.Value)"
+    }
+    foreach ($child in $node.Children) { Find-Power $child }
+}
+Find-Power $json
+```
+
+Résultat obtenu :
+```
+ID: 11 | Nom: CPU Package | Valeur: 13,3 W   ← capteur utilisé
+ID: 79 | Nom: GPU Power   | Valeur: 0,1 W
+```
+
+Le capteur **ID 11 — CPU Package** représente la puissance totale consommée par
+le processeur. C'est ce capteur qui a été utilisé pour toutes les mesures.
+
+### 7.2 Méthodologie de Mesure
+
+**Principe : échantillonnage + intégration trapézoïdale**
+
+La puissance CPU n'est pas constante pendant l'exécution d'un benchmark — elle varie
+selon la charge. Il est donc impossible d'utiliser une valeur fixe. Notre script Python
+adopte l'approche suivante :
+
+1. **Lancer le binaire Rust en arrière-plan** via `subprocess.Popen()`
+2. **Échantillonner la puissance** toutes les 50ms en interrogeant LibreHardwareMonitor
+   pendant toute la durée d'exécution
+3. **Calculer l'énergie** par intégration trapézoïdale :
+
+$$E = \sum_{i=1}^{n} \frac{P_i + P_{i-1}}{2} \times \Delta t_i$$
+
+où $P_i$ est la puissance en Watts à l'instant $t_i$ et $\Delta t_i$ est l'intervalle
+entre deux échantillons consécutifs. Le résultat est exprimé en **Joules**.
+
+Chaque version a été exécutée **2 fois** sur des matrices $1024 \times 1024$,
+et la moyenne est retenue afin de réduire le bruit de mesure dû aux processus
+système en arrière-plan (OS, antivirus, etc.).
+
+### 7.3 Résultats Énergétiques (Taille $n = 1024$)
+
+| Variante | Temps moyen (s) | Puissance moy. (W) | Énergie moy. (J) | Ratio / Naïve |
+| :------- | :-------------: | :----------------: | :--------------: | :-----------: |
+| Naïve (i,j,k)     | 8.24  | 18.07 | 147.15 | Référence |
+| Vectorisée (i,k,j)| 0.59  | 10.60 | 5.12   | −96.5%    |
+| Blocked (Tiling)  | 0.49  | 17.65 | 6.96   | −95.3%    |
+| Parallel (Rayon)  | 0.38  | 14.40 | 3.86   | −97.4%    |
+
+### 7.4 Analyse
+
+**Le temps d'exécution est le facteur dominant de la consommation énergétique.**
+
+La version naïve consomme **38x plus d'énergie** que la version parallèle, non pas
+parce qu'elle consomme beaucoup plus de watts (18W vs 14W, soit seulement ×1.3),
+mais parce qu'elle s'exécute **22x plus longtemps** (8.24s vs 0.38s).
+
+Ce résultat illustre un principe fondamental de l'efficacité énergétique :
+
+> *Réduire le temps d'exécution est plus efficace énergétiquement que réduire
+> la puissance instantanée.*
+
+**Comparaison vectorisée vs blocked :**
+La version vectorisée (5.12 J) consomme moins que la version blocked (6.96 J) malgré
+un temps légèrement supérieur, car sa puissance instantanée est plus basse (10.6W vs
+17.6W). Le tiling améliore la localité cache mais introduit un overhead de gestion
+des blocs qui augmente la charge CPU.
+
+**Version parallèle :**
+Bien qu'elle utilise plusieurs cœurs simultanément — ce qui augmente la puissance
+instantanée — la réduction drastique du temps d'exécution (0.38s) en fait la version
+la plus économe en énergie absolue (3.86 J).

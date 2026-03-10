@@ -120,6 +120,8 @@ fn main() {
     let a = Matrix::random(n);
     let b = Matrix::random(n);
     
+    // Warm-up : exécution préalable pour "réchauffer" le CPU et remplir le cache.
+    // Cela permet d'éviter que la première exécution influence les mesures de performance.
     Matrix::multiply_naive(&a, &b);
 
     let start = Instant::now();
@@ -130,8 +132,13 @@ fn main() {
         "parallel" => Matrix::multiply_parallel(&a, &b),
         _ => panic!("Version inconnue"),
     };
+    // Mesure du temps d'exécution de l'algorithme
     let duration = start.elapsed();
+    // Calcul du nombre d'opérations flottantes théoriques pour la multiplication de matrices
+    // Pour une matrice n x n, on a environ 2 * n^3 opérations
     let flops = 2.0 * (n as f64).powi(3);
+    // Conversion en GFLOPS (Giga Floating Point Operations per Second)
+    // Cette métrique permet d'évaluer la performance de l'algorithme
     let gflops = flops / duration.as_secs_f64() / 1e9;
     println!("Version: {}, Taille: {}, Temps: {:?}", version, n, duration);
     println!("Performance: {:.2} GFLOPS", gflops);

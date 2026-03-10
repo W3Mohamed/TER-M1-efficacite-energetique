@@ -117,9 +117,28 @@ fn main() {
     let version = &args[1];
     let n: usize = args[2].parse().unwrap();
 
+    if version == "bench" {
+    for size in [128, 256, 512] {
+        println!("Benchmark taille {}", size);
+
+        let a = Matrix::random(size);
+        let b = Matrix::random(size);
+
+        let start = Instant::now();
+        Matrix::multiply_naive(&a, &b);
+        let duration = start.elapsed();
+
+        let flops = 2.0 * (size as f64).powi(3);
+        let gflops = flops / duration.as_secs_f64() / 1e9;
+
+        println!("Temps: {:?}", duration);
+        println!("Performance: {:.2} GFLOPS\n", gflops);
+    }
+    return;
+}
     let a = Matrix::random(n);
     let b = Matrix::random(n);
-    
+
     // Warm-up : exécution préalable pour "réchauffer" le CPU et remplir le cache.
     // Cela permet d'éviter que la première exécution influence les mesures de performance.
     Matrix::multiply_naive(&a, &b);

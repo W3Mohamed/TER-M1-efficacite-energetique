@@ -119,6 +119,8 @@ fn main() {
 
     let a = Matrix::random(n);
     let b = Matrix::random(n);
+    
+    Matrix::multiply_naive(&a, &b);
 
     let start = Instant::now();
     let _res = match version.as_str() {

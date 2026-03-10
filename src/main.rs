@@ -129,6 +129,8 @@ fn main() {
         _ => panic!("Version inconnue"),
     };
     let duration = start.elapsed();
-
+    let flops = 2.0 * (n as f64).powi(3);
+    let gflops = flops / duration.as_secs_f64() / 1e9;
     println!("Version: {}, Taille: {}, Temps: {:?}", version, n, duration);
+    println!("Performance: {:.2} GFLOPS", gflops);
 }

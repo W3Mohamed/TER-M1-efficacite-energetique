@@ -118,21 +118,46 @@ fn main() {
     let n: usize = args[2].parse().unwrap();
 
     if version == "bench" {
+    // Mode benchmark : comparaison automatique des différentes implémentations
+    // pour plusieurs tailles de matrices.
     for size in [128, 256, 512] {
+        println!("========================================");
         println!("Benchmark taille {}", size);
+        println!("========================================");
 
         let a = Matrix::random(size);
         let b = Matrix::random(size);
 
-        let start = Instant::now();
-        Matrix::multiply_naive(&a, &b);
-        let duration = start.elapsed();
+        for algo in ["naive", "vector", "blocked", "parallel"] {
+            let start = Instant::now();
 
-        let flops = 2.0 * (size as f64).powi(3);
-        let gflops = flops / duration.as_secs_f64() / 1e9;
+            match algo {
+                "naive" => {
+                    Matrix::multiply_naive(&a, &b);
+                }
+                "vector" => {
+                    Matrix::multiply_vectorized(&a, &b);
+                }
+                "blocked" => {
+                    Matrix::multiply_blocked(&a, &b, 64);
+                }
+                "parallel" => {
+                    Matrix::multiply_parallel(&a, &b);
+                }
+                _ => panic!("Version inconnue"),
+            }
 
-        println!("Temps: {:?}", duration);
-        println!("Performance: {:.2} GFLOPS\n", gflops);
+            let duration = start.elapsed();
+            let flops = 2.0 * (size as f64).powi(3);
+            let gflops = flops / duration.as_secs_f64() / 1e9;
+
+            println!(
+                "Version: {:<8} | Temps: {:?} | Performance: {:.2} GFLOPS",
+                algo, duration, gflops
+            );
+        }
+
+        println!();
     }
     return;
 }

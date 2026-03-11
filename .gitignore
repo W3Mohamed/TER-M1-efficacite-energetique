@@ -1,1 +1,10 @@
 /target
+
+**/*.rs.bk
+
+.vs/
+
+.vscode/
+
+Thumbs.db
+Desktop.ini

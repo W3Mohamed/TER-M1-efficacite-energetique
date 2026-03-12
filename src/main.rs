@@ -2,6 +2,8 @@ use std::ops::{Index, IndexMut};
 use rand::Rng;
 use std::time::Instant;
 use rayon::prelude::*;
+use std::fs::OpenOptions;
+use std::io::Write;
 
 type Element = f64;
 
@@ -118,6 +120,12 @@ fn main() {
     let n: usize = args[2].parse().unwrap();
 
     if version == "bench" {
+        // ouverture du fichier CSV pour enregistrer les résultats
+let mut file = OpenOptions::new()
+    .create(true)
+    .append(true)
+    .open("results.csv")
+    .expect("Impossible d'ouvrir le fichier CSV");
     // Mode benchmark : comparaison automatique des différentes implémentations
     // pour plusieurs tailles de matrices.
     for size in [128, 256, 512] {
@@ -155,6 +163,13 @@ fn main() {
                 "Version: {:<8} | Temps: {:?} | Performance: {:.2} GFLOPS",
                 algo, duration, gflops
             );
+            let time_ms = duration.as_secs_f64() * 1000.0;
+
+            writeln!(
+            file,
+         "{},{},{:.4},{:.2}",
+            size, algo, time_ms, gflops
+        ).unwrap();
         }
 
         println!();

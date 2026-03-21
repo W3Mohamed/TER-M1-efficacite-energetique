@@ -100,6 +100,39 @@ inaccessibles depuis WSL2 car celui-ci ne dispose pas d'un accès direct au mat�
 
 **Outil : LibreHardwareMonitor**
 
+Dans le cadre de ce projet, nous avons étudié l’outil **LibreHardwareMonitor** afin de mieux comprendre les possibilités offertes pour l’analyse du comportement matériel d’un programme.
+
+LibreHardwareMonitor est un logiciel libre de monitoring matériel. D’après les informations consultées, il permet de surveiller plusieurs types d’indicateurs en temps réel, notamment :
+
+- les **températures**
+- les **vitesses des ventilateurs**
+- les **tensions**
+- la **charge** du système
+- les **fréquences d’horloge**
+
+L’outil peut lire des informations sur plusieurs composants matériels, par exemple :
+
+- les **cartes mères**
+- les **processeurs Intel et AMD**
+- les **cartes graphiques NVIDIA, AMD et Intel**
+- les **disques HDD, SSD et NVMe**
+- les **cartes réseau**
+
+Pour notre projet, LibreHardwareMonitor est particulièrement intéressant car il ne se limite pas à une simple lecture de puissance. Il peut aussi fournir d’autres informations utiles pour l’analyse expérimentale, comme :
+
+- la **température du processeur**
+- la **charge CPU**
+- la **fréquence CPU**
+
+Ces fonctionnalités ouvrent la possibilité d’aller au-delà d’une simple mesure de temps d’exécution ou d’énergie, en étudiant aussi le comportement thermique et la sollicitation matérielle des différentes implémentations.
+
+Nous utilisons LibreHardwareMonitor sous Windows, avec son **serveur web local** qui expose les données sous forme JSON. Cela permet à notre script Python de récupérer automatiquement les mesures nécessaires pendant l’exécution des programmes Rust.
+
+Enfin, LibreHardwareMonitor propose également une bibliothèque nommée **LibreHardwareMonitorLib**, qui permet d’intégrer directement ses fonctionnalités dans une application. Cela représente une piste intéressante pour des extensions futures du projet.
+
+Les informations sur LibreHardwareMonitor ont été obtenues à partir du dépôt officiel GitHub :
+https://github.com/LibreHardwareMonitor/LibreHardwareMonitor
+
 Pour accéder aux données RAPL sous Windows, nous avons utilisé
 [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor),
 un logiciel open-source qui :

@@ -229,12 +229,15 @@ let mut file = OpenOptions::new()
     };
     // Mesure du temps d'exécution de l'algorithme
     let duration = start.elapsed();
+    println!("Version: {}, Taille: {}, Temps: {:?}", version, n, duration);
+
+if ["naive", "vector", "blocked", "parallel"].contains(&version.as_str()) {
     // Calcul du nombre d'opérations flottantes théoriques pour la multiplication de matrices
     // Pour une matrice n x n, on a environ 2 * n^3 opérations
     let flops = 2.0 * (n as f64).powi(3);
+
     // Conversion en GFLOPS (Giga Floating Point Operations per Second)
-    // Cette métrique permet d'évaluer la performance de l'algorithme
     let gflops = flops / duration.as_secs_f64() / 1e9;
-    println!("Version: {}, Taille: {}, Temps: {:?}", version, n, duration);
+
     println!("Performance: {:.2} GFLOPS", gflops);
 }

@@ -215,17 +215,40 @@ let mut file = OpenOptions::new()
     let a = Matrix::random(n);
     let b = Matrix::random(n);
 
-    // Warm-up : exécution préalable pour "réchauffer" le CPU et remplir le cache.
-    // Cela permet d'éviter que la première exécution influence les mesures de performance.
+    // Warm-up uniquement pour les versions de multiplication de matrices
+if ["naive", "vector", "blocked", "parallel"].contains(&version.as_str()) {
     Matrix::multiply_naive(&a, &b);
+}
 
-    let start = Instant::now();
-    let _res = match version.as_str() {
-        "naive" => Matrix::multiply_naive(&a, &b),
-        "vector" => Matrix::multiply_vectorized(&a, &b),
-        "blocked" => Matrix::multiply_blocked(&a, &b, 64),
-        "parallel" => Matrix::multiply_parallel(&a, &b),
-        _ => panic!("Version inconnue"),
+let start = Instant::now();
+let _res = match version.as_str() {
+    "naive" => {
+        Matrix::multiply_naive(&a, &b);
+        0u64
+    }
+    "vector" => {
+        Matrix::multiply_vectorized(&a, &b);
+        0u64
+    }
+    "blocked" => {
+        Matrix::multiply_blocked(&a, &b, 64);
+        0u64
+    }
+    "parallel" => {
+        Matrix::multiply_parallel(&a, &b);
+        0u64
+    }
+    "fib_naive" => {
+        fib_naive(n as u32)
+    }
+    "fib_iter" => {
+        fib_iter(n as u32)
+    }
+    "fib_memo" => {
+        let mut memo = vec![0; (n + 1) as usize];
+        fib_memo(n as u32, &mut memo)
+    }
+    _ => panic!("Version inconnue"),
     };
     // Mesure du temps d'exécution de l'algorithme
     let duration = start.elapsed();
@@ -240,4 +263,5 @@ if ["naive", "vector", "blocked", "parallel"].contains(&version.as_str()) {
     let gflops = flops / duration.as_secs_f64() / 1e9;
 
     println!("Performance: {:.2} GFLOPS", gflops);
+}
 }

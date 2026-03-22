@@ -64,6 +64,41 @@ La consommation énergétique d’un programme dépend de la relation suivante :
 Un algorithme plus rapide réduit généralement le temps d’exécution, mais peut augmenter la puissance instantanée du processeur.
 L’objectif est donc de trouver un compromis optimal entre performance et consommation électrique.
 
+## 5. Deuxième Cas d’Étude : L’Algorithme de Fibonacci
+
+Afin d’élargir l’analyse de l’efficacité énergétique à un second type de calcul, nous avons choisi d’étudier l’algorithme de Fibonacci. Ce choix permet de compléter le cas de la multiplication de matrices par un problème algorithmique plus simple, mais très pertinent pour observer l’impact des choix d’implémentation sur la performance et, à terme, sur la consommation énergétique.
+
+### 5.1 Principe
+
+La suite de Fibonacci est définie par la relation de récurrence suivante :
+
+- F(0) = 0
+- F(1) = 1
+- F(n) = F(n - 1) + F(n - 2) pour n ≥ 2
+
+Cet algorithme est intéressant car il peut être implémenté de plusieurs manières très différentes, avec des coûts de calcul très contrastés.
+
+### 5.2 Versions étudiées
+
+Dans notre projet, nous avons retenu trois implémentations de Fibonacci :
+
+- **version naïve récursive** : simple à écrire, mais très coûteuse car elle répète de nombreux calculs identiques ;
+- **version itérative** : plus efficace, car elle calcule la suite de manière séquentielle sans redondance ;
+- **version avec mémoïsation** : optimise la version récursive en mémorisant les résultats déjà calculés.
+
+### 5.3 Intérêt pour l’étude énergétique
+
+L’algorithme de Fibonacci constitue un bon second cas d’étude car il met en évidence l’impact direct de la complexité algorithmique sur le temps d’exécution. Contrairement à la multiplication de matrices, qui mobilise fortement le cache et la mémoire, Fibonacci permet davantage d’illustrer les effets de la redondance des calculs et de l’optimisation algorithmique.
+
+Cette comparaison est utile dans le cadre du projet, car elle permet d’étudier l’efficacité énergétique sur deux familles différentes de problèmes :
+
+- un algorithme de calcul intensif avec forte sollicitation mémoire (multiplication de matrices) ;
+- un algorithme récursif où l’optimisation réduit fortement le nombre d’opérations inutiles (Fibonacci).
+
+### 5.4 Hypothèse de travail
+
+Nous faisons l’hypothèse que la version naïve récursive de Fibonacci sera beaucoup moins efficace, aussi bien en temps qu’en consommation énergétique, que les versions itérative et mémoïsée. Cette étude permettra donc de confirmer, sur un second exemple, qu’un meilleur choix d’implémentation améliore significativement l’efficacité globale d’un programme.
+
 ## 5. Synthèse
 Cette étude théorique met en évidence que la consommation énergétique d’un programme dépend :
 des choix algorithmiques

@@ -3,27 +3,43 @@ import time
 import requests
 
 LHM_URL = "http://localhost:8085/data.json"
-CPU_SENSOR_ID = 11  # CPU Package Power
+CPU_POWER_ID = 29   # CPU Package Power
+CPU_TEMP_ID = 15    # CPU Package Temperature
+CPU_LOAD_ID = 23    # CPU Total Load
 
-def get_cpu_power_watts():
-    """Lit la puissance CPU réelle depuis LibreHardwareMonitor"""
+def get_sensor_value(sensor_id, unit):
+    """Lit un capteur LibreHardwareMonitor et enlève son unité."""
     try:
         data = requests.get(LHM_URL, timeout=2).json()
-        
-        def find_sensor(node, target_id):
-            if node.get("id") == target_id:
-                val = node.get("Value", "0").replace(",", ".").replace(" W", "").strip()
+
+        def find_sensor(node):
+            if node.get("id") == sensor_id:
+                val = node.get("Value", "0")
+                val = val.replace(",", ".").replace(unit, "").strip()
                 return float(val)
+
             for child in node.get("Children", []):
-                result = find_sensor(child, target_id)
+                result = find_sensor(child)
                 if result is not None:
                     return result
-        
-        return find_sensor(data, target_id=CPU_SENSOR_ID)
+
+        return find_sensor(data)
+
     except Exception as e:
         print(f"Erreur lecture capteur: {e}")
         return None
 
+
+def get_cpu_power_watts():
+    return get_sensor_value(CPU_POWER_ID, " W")
+
+
+def get_cpu_temperature():
+    return get_sensor_value(CPU_TEMP_ID, " °C")
+
+
+def get_cpu_load():
+    return get_sensor_value(CPU_LOAD_ID, " %")
 def measure_energy(version, size=1024, sample_interval=0.1):
     """
     Mesure l'énergie réelle consommée pendant l'exécution du benchmark Rust.
@@ -91,11 +107,18 @@ def measure_energy(version, size=1024, sample_interval=0.1):
     }
 
 if __name__ == "__main__":
-    test = get_cpu_power_watts()
-    if test is None:
+    test_power = get_cpu_power_watts()
+    test_temp = get_cpu_temperature()
+    test_load = get_cpu_load()
+
+    print("Test capteurs :")
+    print(f"  Puissance CPU : {test_power}")
+    print(f"  Température   : {test_temp}")
+    print(f"  Charge CPU    : {test_load}")
+
+    if test_power is None:
         print("ERREUR: Impossible de lire le capteur.")
         exit(1)
-    print(f"Capteur OK — Puissance actuelle : {test:.2f} W")
     
     versions = ["naive", "vector", "blocked", "parallel"]
     sizes = [1024]       # une taille

@@ -108,6 +108,42 @@ impl IndexMut<(usize, usize)> for Matrix {
         &mut self.values[index.0 * self.n + index.1]
     }
 }
+// Fibonacci naïf (récursif)
+fn fib_naive(n: u32) -> u64 {
+    if n <= 1 {
+        n as u64
+    } else {
+        fib_naive(n - 1) + fib_naive(n - 2)
+    }
+}
+
+// Fibonacci itératif
+fn fib_iter(n: u32) -> u64 {
+    let mut a = 0;
+    let mut b = 1;
+
+    for _ in 0..n {
+        let temp = a + b;
+        a = b;
+        b = temp;
+    }
+
+    a
+}
+
+// Fibonacci avec mémoïsation
+fn fib_memo(n: u32, memo: &mut Vec<u64>) -> u64 {
+    if n <= 1 {
+        return n as u64;
+    }
+
+    if memo[n as usize] != 0 {
+        return memo[n as usize];
+    }
+
+    memo[n as usize] = fib_memo(n - 1, memo) + fib_memo(n - 2, memo);
+    memo[n as usize]
+}
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();

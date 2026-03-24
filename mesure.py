@@ -120,41 +120,96 @@ if __name__ == "__main__":
         print("ERREUR: Impossible de lire le capteur.")
         exit(1)
     
-    versions = ["naive", "vector", "blocked", "parallel"]
-    sizes = [1024]       # une taille
-    NB_RUNS = 2               # 2 répétitions par version
+    matrix_versions = ["naive", "vector", "blocked", "parallel"]
+    matrix_sizes = [1024]       # une taille
+    fib_versions = ["fib_naive", "fib_iter", "fib_memo"]
+    fib_sizes = [40]
+    NB_RUNS = 2    # 2 répétitions par version
     
     all_results = []
     
-    for size in sizes:
-        print(f"\n{'#'*60}")
-        print(f"  TAILLE : {size}x{size}")
-        print(f"{'#'*60}")
-        for v in versions:
-            run_energies = []
-            run_times = []
-            for run in range(NB_RUNS):
-                print(f"\n  [Run {run+1}/{NB_RUNS}]", end="")
-                r = measure_energy(v, size=size, sample_interval=0.05)
-                run_energies.append(r["energy_j"])
-                run_times.append(r["time_s"])
-                time.sleep(2)
-            
-            avg_e = sum(run_energies) / NB_RUNS
-            avg_t = sum(run_times) / NB_RUNS
-            all_results.append({
-                "size": size,
-                "version": v,
-                "avg_time_s": avg_t,
-                "avg_energy_j": avg_e
-            })
-            time.sleep(3)
+    matrix_results = []
+fib_results = []
+
+# =========================
+# Mesures pour les matrices
+# =========================
+for size in matrix_sizes:
+    print(f"\n{'#'*60}")
+    print(f"  MATRICES - TAILLE : {size}x{size}")
+    print(f"{'#'*60}")
+    for v in matrix_versions:
+        run_energies = []
+        run_times = []
+        run_powers = []
+
+        for run in range(NB_RUNS):
+            print(f"\n  [Run {run+1}/{NB_RUNS}]", end="")
+            r = measure_energy(v, size=size, sample_interval=0.05)
+            run_energies.append(r["energy_j"])
+            run_times.append(r["time_s"])
+            run_powers.append(r["avg_power_w"])
+            time.sleep(2)
+
+        avg_e = sum(run_energies) / NB_RUNS
+        avg_t = sum(run_times) / NB_RUNS
+        avg_p = sum(run_powers) / NB_RUNS
+
+        matrix_results.append({
+            "size": size,
+            "version": v,
+            "avg_time_s": avg_t,
+            "avg_power_w": avg_p,
+            "avg_energy_j": avg_e
+        })
+        time.sleep(3)
+
+# =========================
+# Mesures pour Fibonacci
+# =========================
+for n in fib_sizes:
+    print(f"\n{'#'*60}")
+    print(f"  FIBONACCI - N : {n}")
+    print(f"{'#'*60}")
+    for v in fib_versions:
+        run_energies = []
+        run_times = []
+        run_powers = []
+
+        for run in range(NB_RUNS):
+            print(f"\n  [Run {run+1}/{NB_RUNS}]", end="")
+            r = measure_energy(v, size=n, sample_interval=0.05)
+            run_energies.append(r["energy_j"])
+            run_times.append(r["time_s"])
+            run_powers.append(r["avg_power_w"])
+            time.sleep(2)
+
+        avg_e = sum(run_energies) / NB_RUNS
+        avg_t = sum(run_times) / NB_RUNS
+        avg_p = sum(run_powers) / NB_RUNS
+
+        fib_results.append({
+            "n": n,
+            "version": v,
+            "avg_time_s": avg_t,
+            "avg_power_w": avg_p,
+            "avg_energy_j": avg_e
+        })
+        time.sleep(3)
     
     # Résumé final
-    print(f"\n{'='*65}")
-    print(f"{'RÉSUMÉ FINAL (moyennes sur 3 runs)':^65}")
-    print(f"{'='*65}")
-    print(f"{'Taille':<8} {'Version':<12} {'Temps moy (s)':<16} {'Énergie moy (J)'}")
-    print(f"{'-'*65}")
-    for r in all_results:
-        print(f"{r['size']:<8} {r['version']:<12} {r['avg_time_s']:<16.3f} {r['avg_energy_j']:.2f}")
+    print(f"\n{'='*90}")
+print(f"{'RÉSUMÉ FINAL - MATRICES':^90}")
+print(f"{'='*90}")
+print(f"{'Taille':<8} {'Version':<12} {'Temps moy (s)':<16} {'Puissance moy (W)':<20} {'Énergie moy (J)'}")
+print(f"{'-'*90}")
+for r in matrix_results:
+    print(f"{r['size']:<8} {r['version']:<12} {r['avg_time_s']:<16.3f} {r['avg_power_w']:<20.2f} {r['avg_energy_j']:.2f}")
+
+print(f"\n{'='*90}")
+print(f"{'RÉSUMÉ FINAL - FIBONACCI':^90}")
+print(f"{'='*90}")
+print(f"{'n':<8} {'Version':<12} {'Temps moy (s)':<16} {'Puissance moy (W)':<20} {'Énergie moy (J)'}")
+print(f"{'-'*90}")
+for r in fib_results:
+    print(f"{r['n']:<8} {r['version']:<12} {r['avg_time_s']:<16.6f} {r['avg_power_w']:<20.2f} {r['avg_energy_j']:.2f}")

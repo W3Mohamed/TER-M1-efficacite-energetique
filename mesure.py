@@ -3,9 +3,10 @@ import time
 import requests
 
 LHM_URL = "http://localhost:8085/data.json"
-CPU_POWER_ID = 29   # CPU Package Power
-CPU_TEMP_ID = 15    # CPU Package Temperature
-CPU_LOAD_ID = 23    # CPU Total Load
+# IDs des capteurs dans LibreHardwareMonitor (à ajuster selon votre configuration)
+CPU_POWER_ID = 11   # CPU Package Power
+CPU_TEMP_ID = 28    # CPU Package Temperature
+CPU_LOAD_ID = 34    # CPU Total Load
 
 def get_sensor_value(sensor_id, unit):
     """Lit un capteur LibreHardwareMonitor et enlève son unité."""
@@ -40,6 +41,7 @@ def get_cpu_temperature():
 
 def get_cpu_load():
     return get_sensor_value(CPU_LOAD_ID, " %")
+
 def measure_energy(version, size=1024, sample_interval=0.1):
     """
     Mesure l'énergie réelle consommée pendant l'exécution du benchmark Rust.
@@ -199,6 +201,7 @@ for n in fib_sizes:
     
     # Résumé final
     print(f"\n{'='*90}")
+
 print(f"{'RÉSUMÉ FINAL - MATRICES':^90}")
 print(f"{'='*90}")
 print(f"{'Taille':<8} {'Version':<12} {'Temps moy (s)':<16} {'Puissance moy (W)':<20} {'Énergie moy (J)'}")

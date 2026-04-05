@@ -107,24 +107,14 @@ de la gestion mémoire
 de l’interaction avec l’architecture matérielle
 Dans la suite du projet, différentes implémentations de la multiplication de matrices en Rust seront analysées et mesurées afin de comparer leur efficacité énergétique.
 
-## 6. Résultats Expérimentaux et Analyse
-Afin de valider les concepts théoriques, nous avons implémenté quatre variantes du produit matriciel $n \times n$ en Rust. Les tests ont été effectués sous WSL2 (Ubuntu 24.04).
 
-### 3.1 Tableau Comparatif (Taille $n = 1024$)
-| Variante Algorithmique | Temps d'exécution (s) | Gain / Naïve |
-| :--------------- |:---------------:| :-----:|
-| 1. Naïve (i, j, k)  |   7.34 s        |  Référence |
-| 2. Vector (i, k, j)  |   0.59 s        |   92% |
-| 3. Blocked (Tiling)  |   0.38 s        |   94% |
-| 4. Parallel (Rayon)  |   0.29 s        |    96% |
-
-## 7. Mesure de la Consommation Énergétique (Windows Native)
+## 6. Mesure de la Consommation Énergétique (Windows Native)
 
 Les mesures de temps sous WSL2 ne permettant pas d'accéder aux capteurs matériels du CPU,
 nous avons effectué les mesures énergétiques directement sous Windows en utilisant
 l'API matérielle RAPL (Running Average Power Limit) d'Intel.
 
-### 7.1 Infrastructure de Mesure
+### 6.1 Infrastructure de Mesure
 
 **Technologie RAPL (Running Average Power Limit)**
 
@@ -188,27 +178,12 @@ un logiciel open-source qui :
 # http://localhost:8085/data.json
 
 # Étape 4 : Identification du capteur CPU Package Power via PowerShell
-$json = (Invoke-WebRequest -Uri "http://localhost:8085/data.json").Content | ConvertFrom-Json
-
-function Find-Power($node) {
-    if ($node.Text -match "Power" -or $node.Text -match "Package") {
-        Write-Host "ID: $($node.id) | Nom: $($node.Text) | Valeur: $($node.Value)"
-    }
-    foreach ($child in $node.Children) { Find-Power $child }
-}
-Find-Power $json
-```
-
-Résultat obtenu :
-```
-ID: 11 | Nom: CPU Package | Valeur: 13,3 W   ← capteur utilisé
-ID: 79 | Nom: GPU Power   | Valeur: 0,1 W
 ```
 
 Le capteur **ID 11 — CPU Package** représente la puissance totale consommée par
 le processeur. C'est ce capteur qui a été utilisé pour toutes les mesures.
 
-### 7.2 Méthodologie de Mesure
+### 6.2 Méthodologie de Mesure
 
 **Principe : échantillonnage + intégration trapézoïdale**
 
@@ -230,7 +205,7 @@ Chaque version a été exécutée **2 fois** sur des matrices $1024 \times 1024$
 et la moyenne est retenue afin de réduire le bruit de mesure dû aux processus
 système en arrière-plan (OS, antivirus, etc.).
 
-### 7.3 Résultats Énergétiques (Taille $n = 1024$)
+### 6.3 Résultats Énergétiques (Taille $n = 1024$)
 
 | Variante | Temps moyen (s) | Puissance moy. (W) | Énergie moy. (J) | Ratio / Naïve |
 | :------- | :-------------: | :----------------: | :--------------: | :-----------: |
@@ -239,7 +214,7 @@ système en arrière-plan (OS, antivirus, etc.).
 | Blocked (Tiling)  | 0.49  | 17.65 | 6.96   | −95.3%    |
 | Parallel (Rayon)  | 0.38  | 14.40 | 3.86   | −97.4%    |
 
-### 7.4 Analyse
+### 6.4 Analyse
 
 **Le temps d'exécution est le facteur dominant de la consommation énergétique.**
 

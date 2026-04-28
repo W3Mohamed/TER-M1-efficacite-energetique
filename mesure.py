@@ -1,6 +1,7 @@
 import subprocess
 import time
 import requests
+import matplotlib.pyplot as plt
 
 LHM_URL = "http://localhost:8085/data.json"
 # IDs des capteurs dans LibreHardwareMonitor (à ajuster selon votre configuration)
@@ -150,8 +151,11 @@ if __name__ == "__main__":
         # --- Exécution des Matrices ---
         if choix == "1":
             matrix_versions = ["naive", "vector", "blocked", "parallel"]
-            matrix_sizes = [128,256, 512]       # plusieurs tailles
+            matrix_sizes = [128,256, 512, 768, 1024, 1536, 2048]       # plusieurs tailles
             matrix_results = []
+            # Dictionnaire pour stocker les données du graphique
+            # Structure : { "version_name": ([tailles], [energies]) }
+            plot_data = {v: ([], []) for v in matrix_versions}
             for size in matrix_sizes:
                 print(f"\n{'#'*60}")
                 print(f"  MATRICES - TAILLE : {size}x{size}")
@@ -166,19 +170,46 @@ if __name__ == "__main__":
                         run_times.append(r["time_s"])
                         run_powers.append(r["avg_power_w"])
                         time.sleep(1)
-
+                        
+                    avg_e = sum(run_energies) / NB_RUNS
+                    avg_t = sum(run_times) / NB_RUNS
+                    avg_p = sum(run_powers) / NB_RUNS
+                    # On stocke pour le tableau final
                     matrix_results.append({
                         "size": size,
                         "version": v,
-                        "avg_time_s": sum(run_times) / NB_RUNS,
-                        "avg_power_w": sum(run_powers) / NB_RUNS,
-                        "avg_energy_j": sum(run_energies) / NB_RUNS
+                        "avg_time_s": avg_t,
+                        "avg_power_w": avg_p,
+                        "avg_energy_j": avg_e
                     })
+
+                    # On stocke pour le graphique
+                    plot_data[v][0].append(size) # X : Taille
+                    plot_data[v][1].append(avg_e) # Y : Énergie
+
             # Affichage Résumé Matrices
             print(f"\n{'='*90}\n{'RÉSUMÉ FINAL - MATRICES':^90}\n{'='*90}")
             print(f"{'Taille':<8} {'Version':<12} {'Temps moy (s)':<16} {'Puissance moy (W)':<20} {'Énergie moy (J)'}")
             for r in matrix_results:
                 print(f"{r['size']:<8} {r['version']:<12} {r['avg_time_s']:<16.3f} {r['avg_power_w']:<20.2f} {r['avg_energy_j']:.2f}")
+            
+            # --- Génération du Graphique ---
+            plt.figure(figsize=(10, 6))
+            for v in matrix_versions:
+                sizes, energies = plot_data[v]
+                plt.plot(sizes, energies, marker='o', label=v)
+
+            plt.title("Consommation d'Énergie par Taille de Matrice")
+            plt.xlabel("Taille de la matrice (N x N)")
+            plt.ylabel("Énergie consommée (Joules)")
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.legend()
+            
+            # Sauvegarde automatique avec un timestamp pour ne pas écraser
+            filename = f"benchmark_energy_{int(time.time())}.png"
+            plt.savefig(filename)
+            print(f"\n[INFO] Graphique sauvegardé sous : {filename}")
+            plt.show() # Affiche la fenêtre du graphe
 
 
         elif choix == "2":

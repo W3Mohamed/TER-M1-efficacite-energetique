@@ -151,7 +151,7 @@ if __name__ == "__main__":
         # --- Exécution des Matrices ---
         if choix == "1":
             matrix_versions = ["naive", "vector", "blocked", "parallel"]
-            matrix_sizes = [128,256, 512, 768, 1024, 1536, 2048]       # plusieurs tailles
+            matrix_sizes = [128,256,512]       # plusieurs tailles
             matrix_results = []
             # Dictionnaire pour stocker les données du graphique
             # Structure : { "version_name": ([tailles], [energies]) }
@@ -192,7 +192,7 @@ if __name__ == "__main__":
             print(f"{'Taille':<8} {'Version':<12} {'Temps moy (s)':<16} {'Puissance moy (W)':<20} {'Énergie moy (J)'}")
             for r in matrix_results:
                 print(f"{r['size']:<8} {r['version']:<12} {r['avg_time_s']:<16.3f} {r['avg_power_w']:<20.2f} {r['avg_energy_j']:.2f}")
-            
+
             # --- Génération du Graphique ---
             plt.figure(figsize=(10, 6))
             for v in matrix_versions:
@@ -205,9 +205,9 @@ if __name__ == "__main__":
             plt.grid(True, linestyle='--', alpha=0.7)
             plt.legend()
             
-            # Sauvegarde automatique avec un timestamp pour ne pas écraser
+            # Sauvegarde automatique avec un timestamp pour ne pas écraser (dans un folder images/)
             filename = f"benchmark_energy_{int(time.time())}.png"
-            plt.savefig(filename)
+            plt.savefig(f'images/{filename}')
             print(f"\n[INFO] Graphique sauvegardé sous : {filename}")
             plt.show() # Affiche la fenêtre du graphe
 
@@ -232,7 +232,7 @@ if __name__ == "__main__":
                         run_energies.append(r["energy_j"])
                         run_times.append(r["time_s"])
                         run_powers.append(r["avg_power_w"])
-                        time.sleep(2)
+                        time.sleep(1)
 
                     avg_e = sum(run_energies) / NB_RUNS
                     avg_t = sum(run_times) / NB_RUNS
@@ -245,7 +245,7 @@ if __name__ == "__main__":
                         "avg_power_w": avg_p,
                         "avg_energy_j": avg_e
                     })
-                    time.sleep(3)
+                    time.sleep(1)
 
             # Affichage Résumé Fibonacci
             print(f"\n{'='*90}\n{'RÉSUMÉ FINAL - FIBONACCI':^90}\n{'='*90}")
@@ -255,19 +255,3 @@ if __name__ == "__main__":
         print("\nTest terminé. Retour au menu principal...")
         time.sleep(2)
     all_results = []
-
-
-print(f"{'RÉSUMÉ FINAL - MATRICES':^90}")
-print(f"{'='*90}")
-print(f"{'Taille':<8} {'Version':<12} {'Temps moy (s)':<16} {'Puissance moy (W)':<20} {'Énergie moy (J)'}")
-print(f"{'-'*90}")
-for r in matrix_results:
-    print(f"{r['size']:<8} {r['version']:<12} {r['avg_time_s']:<16.3f} {r['avg_power_w']:<20.2f} {r['avg_energy_j']:.2f}")
-
-print(f"\n{'='*90}")
-print(f"{'RÉSUMÉ FINAL - FIBONACCI':^90}")
-print(f"{'='*90}")
-print(f"{'n':<8} {'Version':<12} {'Temps moy (s)':<16} {'Puissance moy (W)':<20} {'Énergie moy (J)'}")
-print(f"{'-'*90}")
-for r in fib_results:
-    print(f"{r['n']:<8} {r['version']:<12} {r['avg_time_s']:<16.6f} {r['avg_power_w']:<20.2f} {r['avg_energy_j']:.2f}")

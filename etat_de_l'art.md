@@ -17,10 +17,16 @@ Nous allons structurer cette étude en trois points : tout d'abord, nous compare
 ### 2.1 La Mesure : Physique vs Logicielle
 Dans cette section, nous comparons deux approches pour quantifier la dépense énergétique d'un système informatique afin de justifier notre choix méthodologique.
 * **La Mesure Physique (Wattmètre) :** Cette méthode consiste à placer un appareil de mesure entre la prise de courant et l'alimentation de l'ordinateur. Bien qu'elle donne la consommation réelle totale, elle manque de précision pour l'analyse logicielle car elle comptabilise l'ensemble des composants (écran, ventilateurs, périphériques USB, etc.), créant un "bruit" qui masque la consommation spécifique du programme étudié,rendant difficile l'isolation de l'impact réel du code.
-* **La Mesure Logicielle (LibreHardwareMontior) :** À l'inverse, cette approche permet d'isoler la consommation des composants internes sollicités par le calcul, comme le processeur (CPU) et la mémoire vive (RAM). Nous avons choisi d'utiliser **LibreHardwareMontior**, un outil de référence qui agit comme un wattmètre logiciel pour estimer la consommation avec une granularité fine en ciblant spécifiquement le processus de notre application. Cette méthode offre l'avantage de suivre l'évolution de la consommation en temps réel et d'obtenir des données exploitables pour comparer différentes versions d'un algorithme sans les interférences liées au matériel périphérique.
+* **La Mesure Logicielle  (LibreHardwareMonitor) :** 
+ Permet de mesurer spécifiquement :
+  - la puissance CPU
+  - la température
+  - la charge CPU
+
+ Nous utilisons **LibreHardwareMonitor** pour accéder aux données matérielles via un serveur local (`http://localhost:8085/data.json`).
 
 ### 2.2 Le Protocole d'Estimation (L'Isolation)
-Pour obtenir des mesures fiables avec LibreHardwareMontior, il est impératif de mettre en place un protocole d'isolation strict. L'objectif est de garantir que l'énergie consommée et mesurée provient exclusivement de l'exécution de notre algorithme et non de tâches de fond du système d'exploitation.
+Pour obtenir des mesures fiables avec LibreHardwareMonitor, il est impératif de mettre en place un protocole d'isolation strict. L'objectif est de garantir que l'énergie consommée et mesurée provient exclusivement de l'exécution de notre algorithme et non de tâches de fond du système d'exploitation.
 * **Nettoyage de l’environnement :** Avant chaque session de mesure, toutes les applications non essentielles (navigateurs web, outils de communication, mises à jour automatiques) doivent être fermées. Cela permet de réduire la sollicitation inutile du processeur et de la mémoire vive, limitant ainsi le "bruit" numérique qui pourrait fausser les résultats.
 * **Établissement de la ligne de base (Idle) :** Une phase de repos de quelques minutes est observée avant de lancer le programme. Nous mesurons la consommation du système "à vide" pour identifier la consommation résiduelle inhérente à l'ordinateur. Cette valeur sert de référence pour isoler le surcoût énergétique lié uniquement à notre code.
 * **Stabilité thermique :** Le processeur consomme davantage d'énergie lorsqu'il chauffe (phénomène de fuite de courant). Nous veillons donc à ce que la machine soit à une température stable entre chaque test pour éviter que la chaleur accumulée ne biaise les comparaisons.
@@ -99,7 +105,7 @@ Cette comparaison est utile dans le cadre du projet, car elle permet d’étudie
 
 Nous faisons l’hypothèse que la version naïve récursive de Fibonacci sera beaucoup moins efficace, aussi bien en temps qu’en consommation énergétique, que les versions itérative et mémoïsée. Cette étude permettra donc de confirmer, sur un second exemple, qu’un meilleur choix d’implémentation améliore significativement l’efficacité globale d’un programme.
 
-## 5. Synthèse
+## 6. Synthèse
 Cette étude théorique met en évidence que la consommation énergétique d’un programme dépend :
 des choix algorithmiques
 de l’implémentation
@@ -107,14 +113,23 @@ de la gestion mémoire
 de l’interaction avec l’architecture matérielle
 Dans la suite du projet, différentes implémentations de la multiplication de matrices en Rust seront analysées et mesurées afin de comparer leur efficacité énergétique.
 
+## 7. Résultats Expérimentaux et Analyse
+Afin de valider les concepts théoriques, nous avons implémenté quatre variantes du produit matriciel $n \times n$ en Rust. Les tests ont été réalisés sous Windows, et les mesures énergétiques ont été effectuées à l’aide de LibreHardwareMonitor.
 
-## 6. Mesure de la Consommation Énergétique (Windows Native)
+### 7.1 Tableau Comparatif (Taille $n = 1024$)
+| Variante Algorithmique | Temps d'exécution (s) | Gain / Naïve |
+| :--------------- |:---------------:| :-----:|
+| 1. Naïve (i, j, k)  |   7.34 s        |  Référence |
+| 2. Vector (i, k, j)  |   0.59 s        |   92% |
+| 3. Blocked (Tiling)  |   0.38 s        |   94% |
+| 4. Parallel (Rayon)  |   0.29 s        |    96% |
 
-Les mesures de temps sous WSL2 ne permettant pas d'accéder aux capteurs matériels du CPU,
-nous avons effectué les mesures énergétiques directement sous Windows en utilisant
-l'API matérielle RAPL (Running Average Power Limit) d'Intel.
+## 8. Mesure de la Consommation Énergétique (Windows Native)
 
-### 6.1 Infrastructure de Mesure
+Nous avons effectué les mesures énergétiques directement sous Windows en utilisant
+LibreHardwareMonitor, qui permet d’accéder aux capteurs matériels du processeur via un serveur web local.
+
+### 8.1 Infrastructure de Mesure
 
 **Technologie RAPL (Running Average Power Limit)**
 
@@ -178,12 +193,27 @@ un logiciel open-source qui :
 # http://localhost:8085/data.json
 
 # Étape 4 : Identification du capteur CPU Package Power via PowerShell
+$json = (Invoke-WebRequest -Uri "http://localhost:8085/data.json").Content | ConvertFrom-Json
+
+function Find-Power($node) {
+    if ($node.Text -match "Power" -or $node.Text -match "Package") {
+        Write-Host "ID: $($node.id) | Nom: $($node.Text) | Valeur: $($node.Value)"
+    }
+    foreach ($child in $node.Children) { Find-Power $child }
+}
+Find-Power $json
 ```
 
-Le capteur **ID 11 — CPU Package** représente la puissance totale consommée par
-le processeur. C'est ce capteur qui a été utilisé pour toutes les mesures.
+Résultat obtenu :
+```
+ID: 29 | Nom: CPU Package | Type: Power | Valeur: 4,9 W
+ID: 15 | Nom: CPU Package | Type: Temperature | Valeur: 50,0 °C
+ID: 23 | Nom: CPU Total | Type: Load | Valeur: 11,3 %
+```
 
-### 6.2 Méthodologie de Mesure
+Le capteur ID 29 — CPU Package Power représente la puissance totale consommée par le processeur. Nous avons également utilisé les capteurs ID 15 (température) et ID 23 (charge CPU).
+
+### 8.2 Méthodologie de Mesure
 
 **Principe : échantillonnage + intégration trapézoïdale**
 
@@ -205,7 +235,7 @@ Chaque version a été exécutée **2 fois** sur des matrices $1024 \times 1024$
 et la moyenne est retenue afin de réduire le bruit de mesure dû aux processus
 système en arrière-plan (OS, antivirus, etc.).
 
-### 6.3 Résultats Énergétiques (Taille $n = 1024$)
+### 8.3 Résultats Énergétiques (Taille $n = 1024$)
 
 | Variante | Temps moyen (s) | Puissance moy. (W) | Énergie moy. (J) | Ratio / Naïve |
 | :------- | :-------------: | :----------------: | :--------------: | :-----------: |
@@ -214,7 +244,7 @@ système en arrière-plan (OS, antivirus, etc.).
 | Blocked (Tiling)  | 0.49  | 17.65 | 6.96   | −95.3%    |
 | Parallel (Rayon)  | 0.38  | 14.40 | 3.86   | −97.4%    |
 
-### 6.4 Analyse
+### 8.4 Analyse
 
 **Le temps d'exécution est le facteur dominant de la consommation énergétique.**
 
@@ -237,3 +267,4 @@ des blocs qui augmente la charge CPU.
 Bien qu'elle utilise plusieurs cœurs simultanément — ce qui augmente la puissance
 instantanée — la réduction drastique du temps d'exécution (0.38s) en fait la version
 la plus économe en énergie absolue (3.86 J).
+Donc c'est bon maintenant 

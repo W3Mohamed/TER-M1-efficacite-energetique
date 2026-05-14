@@ -68,11 +68,12 @@ Dans le cadre de ce projet, nous n’avons pas utilisé directement perf car not
 
 Toutefois, un environnement Linux utilisant perf constituerait une extension naturelle du projet. Il permettrait d’obtenir une analyse plus fine des événements matériels internes du processeur et de corréler plus précisément les performances énergétiques observées avec les phénomènes de cache et de mémoire.
 
-Sources
-Documentation officielle perf Linux
-Manuel perf – man7.org
-Documentation Red Hat – perf
-Article Wikipédia – perf Linux
+### Sources
+
+- [Documentation officielle perf Linux](https://perf.wiki.kernel.org/index.php/Main_Page)
+- [Manuel perf – man7.org](https://man7.org/linux/man-pages/man1/perf.1.html)
+- [Documentation Red Hat – perf](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html/monitoring_and_managing_system_status_and_performance/getting-started-with-perf)
+- [Article Wikipédia – perf Linux](https://fr.wikipedia.org/wiki/Perf_(Linux))
 
 ### 2.3 Le Protocole d'Estimation (L'Isolation)
 Pour obtenir des mesures fiables avec LibreHardwareMonitor, il est impératif de mettre en place un protocole d'isolation strict. L'objectif est de garantir que l'énergie consommée et mesurée provient exclusivement de l'exécution de notre algorithme et non de tâches de fond du système d'exploitation.

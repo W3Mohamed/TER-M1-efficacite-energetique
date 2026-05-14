@@ -25,14 +25,63 @@ Dans cette section, nous comparons deux approches pour quantifier la dépense é
 
  Nous utilisons **LibreHardwareMonitor** pour accéder aux données matérielles via un serveur local (`http://localhost:8085/data.json`).
 
-### 2.2 Le Protocole d'Estimation (L'Isolation)
+### 2.2 Outils de Profilage et d’Analyse de Performance
+
+Dans les environnements Linux, l’outil perf est largement utilisé pour l’analyse bas niveau des performances matérielles et logicielles. Perf est un outil de profilage intégré au noyau Linux permettant de mesurer différents événements matériels et logiciels pendant l’exécution d’un programme.
+
+Perf s’appuie sur le PMU (Performance Monitoring Unit), un composant matériel intégré au processeur chargé de compter certains événements internes du CPU. Grâce à cette interface matérielle, il est possible d’observer avec précision le comportement du processeur et de la mémoire lors de l’exécution d’un algorithme.
+
+Parmi les événements mesurables figurent notamment :
+
+les cycles processeur (CPU cycles) ;
+les instructions exécutées ;
+les défauts de cache (cache misses) ;
+les références cache (cache references) ;
+les accès mémoire ;
+certains indicateurs énergétiques via les compteurs RAPL des processeurs Intel.
+
+Ces informations sont particulièrement importantes dans les études d’efficacité énergétique logicielle car elles permettent de relier directement les performances observées au comportement matériel du programme.
+
+Dans le cadre de notre projet, les cache misses constituent un indicateur central. Lorsqu’une donnée n’est pas présente dans le cache du processeur, le CPU doit aller la récupérer dans la mémoire principale (RAM), beaucoup plus lente et plus coûteuse énergétiquement. Une augmentation du nombre de cache misses entraîne donc généralement :
+
+cache misses ↑
+→ accès RAM ↑
+→ temps d’exécution ↑
+→ énergie consommée ↑
+
+Perf propose plusieurs commandes de profilage permettant d’analyser ces phénomènes :
+
+perf stat : fournit des statistiques globales sur les événements matériels ;
+perf record : enregistre les événements observés pendant l’exécution ;
+perf report : analyse les données collectées ;
+perf list : affiche les événements disponibles sur la machine ;
+perf top : visualisation temps réel des fonctions les plus actives.
+
+Par exemple, la commande suivante permet de mesurer le nombre de cache misses générés par un programme :
+
+perf stat -e cache-misses ./programme
+
+L’outil perf permet également d’accéder aux mesures énergétiques fournies par la technologie RAPL (Running Average Power Limit) intégrée dans certains processeurs Intel. Ces compteurs matériels permettent d’estimer la consommation énergétique du processeur pendant l’exécution d’un programme.
+
+Dans le cadre de ce projet, nous n’avons pas utilisé directement perf car notre environnement expérimental principal était Windows. Nous avons donc privilégié l’utilisation de LibreHardwareMonitor
+ afin d’accéder aux données énergétiques exposées par les compteurs RAPL via un serveur web local JSON.
+
+Toutefois, un environnement Linux utilisant perf constituerait une extension naturelle du projet. Il permettrait d’obtenir une analyse plus fine des événements matériels internes du processeur et de corréler plus précisément les performances énergétiques observées avec les phénomènes de cache et de mémoire.
+
+Sources
+Documentation officielle perf Linux
+Manuel perf – man7.org
+Documentation Red Hat – perf
+Article Wikipédia – perf Linux
+
+### 2.3 Le Protocole d'Estimation (L'Isolation)
 Pour obtenir des mesures fiables avec LibreHardwareMonitor, il est impératif de mettre en place un protocole d'isolation strict. L'objectif est de garantir que l'énergie consommée et mesurée provient exclusivement de l'exécution de notre algorithme et non de tâches de fond du système d'exploitation.
 * **Nettoyage de l'environnement :** Avant chaque session de mesure, toutes les applications non essentielles (navigateurs web, outils de communication, mises à jour automatiques) doivent être fermées. Cela permet de réduire la sollicitation inutile du processeur et de la mémoire vive, limitant ainsi le "bruit" numérique qui pourrait fausser les résultats.
 * **Établissement de la ligne de base (Idle) :** Une phase de repos de quelques minutes est observée avant de lancer le programme. Nous mesurons la consommation du système "à vide" pour identifier la consommation résiduelle inhérente à l'ordinateur. Cette valeur sert de référence pour isoler le surcoût énergétique lié uniquement à notre code.
 * **Stabilité thermique :** Le processeur consomme davantage d'énergie lorsqu'il chauffe (phénomène de fuite de courant). Nous veillons donc à ce que la machine soit à une température stable entre chaque test pour éviter que la chaleur accumulée ne biaise les comparaisons.
 * **Répétabilité et moyenne statistique :** Une mesure unique n'est jamais représentative à cause des micro-activités du système. Chaque test est répété plusieurs fois (par exemple 3 itérations). Nous calculons ensuite une moyenne des résultats afin d'assurer la validité statistique de nos données et d'éliminer les valeurs aberrantes.
 
-### 2.3 Les Métriques de Calcul
+### 2.4 Les Métriques de Calcul
 Une fois le protocole de mesure appliqué, nous collectons des données quantitatives que nous analysons selon trois indicateurs complémentaires :
 * **L'Énergie (Joules) :** C'est notre métrique de référence. Elle représente la quantité totale de travail électrique consommé par le processeur et la mémoire durant l'exécution complète de l'algorithme. C'est l'indicateur principal de l'empreinte environnementale du code.
 * **La Puissance (Watts) :** Elle exprime le débit d'énergie à un instant $T$. Son analyse nous permet d'identifier les phases de calcul les plus intenses et d'observer les "pics" de consommation liés à certaines instructions ou accès mémoire.

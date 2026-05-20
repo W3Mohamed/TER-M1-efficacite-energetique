@@ -328,3 +328,70 @@ L'écart énergétique entre la version naïve et les versions optimisées n'est
 constant — il s'amplifie avec n. Cela signifie que les bonnes pratiques
 d'implémentation (localité mémoire, parallélisme) sont d'autant plus importantes
 que la taille du problème est grande.
+
+#### Limites de la mesure
+
+LibreHardwareMonitor via RAPL mesure uniquement la puissance du **CPU Package**. Il
+ne mesure pas la consommation de la RAM. Or la version naïve, en générant de nombreux
+cache misses, force des accès RAM intensifs qui consomment aussi de l'énergie. Nos
+mesures sous-estiment donc légèrement l'impact réel de la version naïve — l'écart
+avec les versions optimisées serait encore plus grand avec une mesure DRAM incluse.
+
+Par ailleurs, l'explication par les cache misses reste une **déduction théorique**
+cohérente avec les résultats. Pour la confirmer expérimentalement, il faudrait
+utiliser un outil comme perf (voir section 2.2) qui permet de compter directement
+le nombre de cache misses générés par chaque version.
+
+---
+
+## 8. Bonnes pratiques énergétiques pour le développeur
+
+Les résultats obtenus permettent d'illustrer directement quatre principes
+d'éco-conception logicielle.
+
+### 8.1 Respecter la localité mémoire
+
+Accéder aux données dans l'ordre où elles sont stockées en mémoire est le levier
+le plus impactant. La version vectorisée ne diffère de la naïve que par l'ordre de
+deux boucles imbriquées. À n = 2048, elle passe de 2015 J à 995 J — une réduction
+de 51 % pour une modification de 2 lignes de code.
+
+> Dans les boucles imbriquées, la boucle la plus interne doit parcourir des cases
+> mémoire adjacentes (varier l'indice de colonne en dernier pour un tableau
+> stocké en row-major).
+
+### 8.2 Exploiter le parallélisme disponible
+
+Un processeur moderne dispose de plusieurs cœurs. Un programme séquentiel n'en
+utilise qu'un. Dans notre projet, la bibliothèque Rayon (Rust) parallélise la
+multiplication matricielle en quelques lignes de code : chaque cœur calcule une
+portion indépendante de la matrice résultante simultanément.
+
+À noter : le parallélisme introduit un overhead de gestion des threads. À n = 128,
+la version parallèle consomme plus que la naïve — le surcoût dépasse le bénéfice.
+Le parallélisme est rentable uniquement quand le volume de calcul est suffisamment
+grand.
+
+### 8.3 Choisir le bon algorithme dès la conception
+
+C'est la décision la plus structurante. À n = 2048 : naïve 2015 J, parallèle 986 J
+— même machine, même résultat, deux fois moins d'énergie. Cette différence provient
+uniquement des choix d'implémentation, pas du matériel.
+
+De façon générale, un algorithme de complexité inférieure sera toujours plus économe
+pour de grandes entrées, quelle que soit l'optimisation appliquée à un algorithme
+moins efficace. L'efficacité énergétique commence à la phase de conception.
+
+### 8.4 Conclusion générale
+
+Ce projet confirme expérimentalement que **l'énergie consommée est avant tout
+déterminée par le temps d'exécution**, et non par la puissance instantanée. La
+version naïve à n = 1024 tire légèrement moins de watts que les versions optimisées
+(6.09 W contre 6.5 W) et pourtant consomme deux fois plus d'énergie, car elle
+s'exécute deux fois plus longtemps.
+
+L'écart entre la version naïve et les versions optimisées s'amplifie avec la taille
+du problème : négligeable à n = 128, il atteint un facteur 2 à partir de n = 1024.
+Cela signifie que les bonnes pratiques d'implémentation sont d'autant plus
+importantes que la taille du problème est grande — ce qui est précisément le cas
+des applications réelles traitant de grands volumes de données.

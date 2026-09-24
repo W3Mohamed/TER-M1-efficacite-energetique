@@ -151,7 +151,7 @@ if __name__ == "__main__":
         # --- Exécution des Matrices ---
         if choix == "1":
             matrix_versions = ["naive", "vector", "blocked", "parallel"]
-            matrix_sizes = [2048]       # plusieurs tailles
+            matrix_sizes = [1024]       # plusieurs tailles
             matrix_results = []
             # Dictionnaire pour stocker les données du graphique
             # Structure : { "version_name": ([tailles], [energies]) }
